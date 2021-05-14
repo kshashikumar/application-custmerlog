@@ -1,0 +1,76 @@
+package com.app.controller;
+
+import java.text.SimpleDateFormat;
+import java.time.LocalTime;
+import java.util.Date;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import com.app.model.LogModel;
+import com.app.repo.CustomerLogRepo;
+
+@Controller
+public class CustomerLogController {
+     
+	@Autowired
+	private CustomerLogRepo customerLogRepo;
+	private String loginname;
+	
+	@GetMapping("/")
+	public String home() {
+		return "home";
+	}
+	
+
+	@PostMapping("/checkin")
+	public String checkedIn(@RequestParam("name") String name) {
+		this.loginname=name;
+	LogModel logModel=new LogModel();
+	Date date = new Date();
+	SimpleDateFormat formatter = new SimpleDateFormat("yyyy/MM/dd");  
+	logModel.setDate(formatter.format(date));
+	logModel.setName(loginname);
+	logModel.setTime(LocalTime.now().toString());
+	logModel.setId(name, LocalTime.now().toString());
+	logModel.setLogType("IN");
+	customerLogRepo.save(logModel);
+	return "successfull checkin";
+	}
+	
+
+	@PostMapping("/checkout")
+	public String checkedOut() {
+		
+	LogModel logModel=new LogModel();
+	Date date = new Date();
+	SimpleDateFormat formatter = new SimpleDateFormat("yyyy/MM/dd");  
+	logModel.setDate(formatter.format(date));
+	logModel.setTime(LocalTime.now().toString());
+	logModel.setName(loginname);
+	logModel.setId(loginname,LocalTime.now().toString() );
+	logModel.setLogType("OUT");
+	customerLogRepo.save(logModel);
+	this.loginname="";
+	return "successfull checkout";
+	}
+	
+
+	@GetMapping("/getalllogs")
+    public List<LogModel> getAllLogs(){
+    	return customerLogRepo.findAll();
+    }
+	
+	@GetMapping("/getlogbydate")
+	public List<LogModel> getLogByDate(@RequestParam("date") String date){
+		return customerLogRepo.findAllByDate(date);
+	}
+
+	
+	
+
+}
